@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 
 const app = express();
+
 app.use(express.json());
 
 //configure dotenv
@@ -13,12 +14,11 @@ dotenv.config();
 const PORT = process.env.PORT;
 
 //mongodb-url
-// const Mongo_url = "mongodb://localhost:27017"
-const Mongo_url = process.env.MONGO_URL;
+const DB_URL = process.env.MONGODB_URL;
 
 //createConnection
 async function createConnection() {
-    const client = new MongoClient(Mongo_url)
+    const client = new MongoClient(DB_URL)
     await client.connect();
     console.log("mongo connected");
     return client;
@@ -30,14 +30,14 @@ const client = await createConnection();
 //create mentor
 app.post("/creatementor", async function (req, res) {
     const data = req.body;
-    const result = await client.db("task42").collection("mentors").insertOne(data);
+    const result = await client.db("map35").collection("mentors").insertOne(data);
     res.send(result);
 
 })
 //create student
 app.post("/createstudent", async function (req, res) {
     const data = req.body;
-    const result = await client.db("task42").collection("students").insertOne(data);
+    const result = await client.db("map35").collection("students").insertOne(data);
     res.send(result);
 
 })
@@ -47,9 +47,9 @@ app.post("/createstudent", async function (req, res) {
 app.put("/addmentor/:name", async function (req, res) {
     let { name } = req.params;
     let data = req.body.students;
-    const result = await client.db("task42").collection("mentors").updateMany({ name: name }, { $set: { students: data } });
+    const result = await client.db("map35").collection("mentors").updateMany({ name: name }, { $set: { students: data } });
     data.map(async (student) => {
-        let result = await client.db("task42").collection("students").updateMany({ name: student }, { $set: { mentor: name } });
+        let result = await client.db("map35").collection("students").updateMany({ name: student }, { $set: { mentor: name } });
     })
     res.send(result)
 
@@ -62,7 +62,7 @@ app.put("/changementor/:name", async function (req, res) {
     const { name } = req.params;
 
 
-    const result = await client.db("task42").collection("students").updateOne({ name: name }, { $set: { mentor: req.body.mentor } });
+    const result = await client.db("map35").collection("students").updateOne({ name: name }, { $set: { mentor: req.body.mentor } });
     res.send(result)
 })
 
@@ -72,7 +72,7 @@ app.put("/changementor/:name", async function (req, res) {
 app.get("/getstudent/:id", async function (req, res) {
     const { id } = req.params;
     console.log(id)
-    const data = await client.db("task42").collection("mentors").find({ _id: ObjectId(id) }, { students: 1 }).toArray();
+    const data = await client.db("map35").collection("mentors").find({ _id: ObjectId(id) }, { students: 1 }).toArray();
     console.log(data)
     res.send(data);
 })
